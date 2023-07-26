@@ -7,29 +7,22 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     require: [true, "Please fill in your username"],
-    minlength: [2, "Username must be greater than 3 characters"],
     unique: [true, "A user with this username already exist"],
     trim: true,
   },
 
   firstName: {
     type: String,
-    require: [true, "Please fill in your first name"],
-    minlength: [2, "Username must be greater than 5 characters"],
     trim: true,
   },
 
   middleName: {
     type: String,
-    require: [true, "Please fill in your middle name"],
-    minlength: [2, "Username must be greater than 5 characters"],
     trim: true,
   },
 
   lastName: {
     type: String,
-    require: [true, "Please fill in your last name"],
-    minlength: [2, "Username must be greater than 5 characters"],
     trim: true,
   },
 
@@ -38,13 +31,13 @@ const userSchema = new mongoose.Schema({
   idPicture: String,
   dob: Number,
   pin: Number,
+  code: Number,
   currency: String,
 
   phoneNumber1: {
     type: String,
     required: [true, "Please fill in your phone number"],
     unique: [true, "A user with this phone number already exist"],
-    minlength: [10, "Phone number must be at least 10 digits"],
     trim: true,
   },
   email: {

@@ -45,7 +45,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     return next(new AppError(`Please upload the necessary documents!`, 500));
   }
 
-  req.body.suspension = true;
+  req.body.suspension = false;
 
   const existingUsers = await User.find();
 
@@ -86,7 +86,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   }
 
   // GET THE EMAIL AND THE USERS TO SEND TO
-  const email = await Email.find({ name: "confirm-registration" });
+  const email = await Email.find({ name: "registration-successful" });
   const users = [user];
 
   // const resetURL = `${req.protocol}://${req.get(
@@ -148,15 +148,6 @@ exports.login = catchAsync(async (req, res, next) => {
 
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError("Incorrect username or password", 401));
-  }
-
-  if (user.suspension) {
-    return next(
-      new AppError(
-        "Activate your account by verifying the Zivik email sent to you",
-        401
-      )
-    );
   }
 
   //3) if everything is ok, send token to client
