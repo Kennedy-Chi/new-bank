@@ -53,23 +53,31 @@ exports.editUser = catchAsync(async (req, res, next) => {
 
   if (req.body.balance) {
     await Account.findByIdAndUpdate(req.body.accountId, {
-      balance: req.body.balance,
+      $inc: {
+        balance: req.body.balance,
+      },
     });
   }
 
-  if (req.files.profilePicture) {
+  if (req.files) {
     if (req.files.profilePicture) {
-      req.body.profilePicture = req.files.profilePicture[0].filename;
-      files.push(oldUser.profilePicture);
-    }
-    if (req.files.idPicture) {
-      req.body.idPicture = req.files.idPicture[0].filename;
-      files.push(oldUser.idPicture);
+      if (req.files.profilePicture) {
+        req.body.profilePicture = req.files.profilePicture[0].filename;
+        files.push(oldUser.profilePicture);
+      }
+      if (req.files.idPicture) {
+        req.body.idPicture = req.files.idPicture[0].filename;
+        files.push(oldUser.idPicture);
+      }
     }
   }
 
+  let totalBalance = oldUser.totalBalance * 1 + req.body.balance * 1;
+
   req.body.password = undefined;
   req.body.cPassword = undefined;
+
+  req.body.totalBalance = totalBalance;
 
   const user = await User.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
@@ -118,4 +126,51 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   });
 
   next();
+});
+
+exports.resetUsers = catchAsync(async (req, res, next) => {
+  await User.updateMany({ $set: { totalBalance: 0 } });
+  await Wallet.updateMany({
+    $set: {
+      balance: 0,
+      totalDeposit: 0,
+      pendingDeposit: 0,
+      totalWithdrawal: 0,
+      pendingWithdrawal: 0,
+    },
+  });
+  await Transaction.deleteMany();
+  await History.deleteMany();
+  await Active.deleteMany();
+  await Earning.deleteMany();
+
+  res.status(200).json({
+    status: "success",
+  });
+});
+
+exports.resetUser = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
+
+  await User.updateMany({ _id: req.params.id }, { $set: { totalBalance: 0 } });
+  await Wallet.updateMany(
+    { username: user.username },
+    {
+      $set: {
+        balance: 0,
+        totalDeposit: 0,
+        pendingDeposit: 0,
+        totalWithdrawal: 0,
+        pendingWithdrawal: 0,
+      },
+    }
+  );
+  await Transaction.deleteMany({ username: user.username });
+  await History.deleteMany({ username: user.username });
+  await Active.deleteMany({ username: user.username });
+  await Earning.deleteMany({ username: user.username });
+
+  res.status(200).json({
+    status: "success",
+  });
 });

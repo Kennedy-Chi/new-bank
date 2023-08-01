@@ -46,6 +46,14 @@ exports.createTransaction = catchAsync(async (req, res, next) => {
   }
 
   const symbol = await Currency.find();
+  if (allowedFields.autoTransact) {
+    allowedFields.user.totalBalance += allowedFields.amount;
+    allowedFields.user.account.balance += allowedFields.amount;
+
+    await User.findByIdAndUpdate(allowedFields.user._id, {
+      account: allowedFields.user.account,
+    });
+  }
 
   allowedFields.symbol = symbol[0]?.symbol;
 

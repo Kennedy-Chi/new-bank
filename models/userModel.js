@@ -40,6 +40,7 @@ const userSchema = new mongoose.Schema({
     unique: [true, "A user with this phone number already exist"],
     trim: true,
   },
+
   email: {
     type: String,
     required: [true, "Please fill in your email"],
@@ -48,6 +49,7 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, "Please provide a valid email"],
   },
+
   autoRegister: {
     type: Boolean,
     default: false,
@@ -102,7 +104,7 @@ const userSchema = new mongoose.Schema({
       message: "Sorry the passwords do not match",
     },
   },
-
+  account: Object,
   regDate: Number,
   referrals: Array,
   passwordChangedAt: Date,

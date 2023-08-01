@@ -45,7 +45,11 @@ exports.signup = catchAsync(async (req, res, next) => {
     return next(new AppError(`Please upload the necessary documents!`, 500));
   }
 
-  req.body.suspension = false;
+  if (req.body.dob == "") {
+    req.body.dob = 18 * 60 * 60 * 24;
+  }
+
+  req.body.suspension = true;
 
   const existingUsers = await User.find();
 
@@ -54,30 +58,34 @@ exports.signup = catchAsync(async (req, res, next) => {
     req.body.status = "Staff";
   }
 
+  const getAccountNumber = () => {
+    let min = 10000000;
+    let max = 99999999;
+
+    let random_number = Math.floor(Math.random() * (max - min + 1)) + min; // generates an 8-digit number
+    return "00" + random_number.toString(); // adds two leading zeros
+  };
+
+  const accountDetails = {
+    fullName: `${req.body.firstName} ${req.body.middleName} ${req.body.lastName}`,
+    username: req.body.username,
+    currency: req.body.currency,
+    accountNumber: getAccountNumber(),
+    balance: 0,
+    accountType: "Savings",
+  };
+
+  req.body.account = accountDetails;
+
+  await Account.create(accountDetails);
+
   const user = await User.create(req.body);
   const related = await Related.create(req.body);
 
   if (req.body.autoRegister) {
-    const getAccountNumber = () => {
-      let min = 10000000;
-      let max = 99999999;
-
-      let random_number = Math.floor(Math.random() * (max - min + 1)) + min; // generates an 8-digit number
-      return "00" + random_number.toString(); // adds two leading zeros
-    };
     const newUser = await User.findByIdAndUpdate(user._id, {
       suspension: false,
     });
-
-    const accountDetails = {
-      fullName: `${newUser.firstName} ${newUser.middleName} ${newUser.lastName}`,
-      username: newUser.username,
-      currency: newUser.currency,
-      accountNumber: getAccountNumber(),
-      balance: 0,
-      accountType: "Savings",
-    };
-    await Account.create(accountDetails);
 
     res.status(200).json({
       status: "success",
